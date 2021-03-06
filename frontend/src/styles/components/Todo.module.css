@@ -1,0 +1,36 @@
+.container {
+  background-color: #fff;
+  border-radius: 0.25rem;
+  box-shadow: 0.15rem 0.15rem 0.25rem 0 rgb(0, 0, 0, .10);
+  padding: 1rem;
+  transition: all 0.15s ease-in-out;
+  cursor: pointer;
+}
+
+.container + .container {
+  margin-top: 0.5rem;
+}
+
+.container:hover {
+  transform: scale(1.02);
+}
+
+.title {
+  font-weight: bold;
+}
+
+.userContainer {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: felx-start;
+  margin-top: 1rem;
+}
+
+.container.completed {
+  color: #9a9a9a;
+}
+
+.completed .title {
+  text-decoration: line-through;  
+}
