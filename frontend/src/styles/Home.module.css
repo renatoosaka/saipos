@@ -16,21 +16,7 @@
   padding: 1rem 0;
   display: flex;
   flex-direction: row;
-}
-
-.todoContainerTile {
-  font-weight: 500;
-  font-size: 1.25rem;
-  border-bottom: 1px solid;
-  margin: 1rem 0;
-}
-
-.todoColumn {
   width: 100%;
-}
-
-.todoColumn + .todoColumn {
-  margin-left: 1rem;
 }
 
 .main {

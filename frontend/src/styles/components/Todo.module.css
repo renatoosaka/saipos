@@ -34,3 +34,7 @@
 .completed .title {
   text-decoration: line-through;  
 }
+
+.container.dragging {
+  opacity: .4;
+}

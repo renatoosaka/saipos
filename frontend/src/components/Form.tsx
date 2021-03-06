@@ -16,7 +16,7 @@ export function Form() {
   const onSubmit = useCallback(async (data: FormData) => {
     await createTodo(data)
     reset()
-  }, []);
+  }, [createTodo, reset]);
 
   return (
     <form className={styles.container} onSubmit={handleSubmit(onSubmit)}>

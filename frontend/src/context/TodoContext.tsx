@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { toast } from 'react-toastify'
 
 interface User {
@@ -20,18 +20,42 @@ interface CreateTodoData {
   description: string;  
 }
 
+interface ToogleTodoData {
+  id: string
+  type: string
+}
 interface TodoContextData {
+  todos: Todo[]
   completedTodos: Todo[]
   pendingTodos: Todo[]
   createTodo: (data: CreateTodoData) => Promise<void>
+  toogleTodoStatus: (data: ToogleTodoData) => Promise<void>
 }
 
 const TodoContext = createContext({} as TodoContextData)
 
-export const TodoProvider = ({ children }) => {
-  const [completedTodos, setCompletedTodos] = useState<Todo[]>([])
-  const [pendingTodos, setPendingTodos] = useState<Todo[]>([])
+interface TodoProviderProps {
+  children: React.ReactNode
+}
+
+export  function TodoProvider({ children }: TodoProviderProps) {
+  const [todos, setTodos] = useState<Todo[]>(() => {
+    const todos = localStorage.getItem('@saipos-todos')
+
+    if (!todos) {
+      return []
+    }
+
+    return JSON.parse(todos)
+  })
   
+  useEffect(() => {
+    fetch(`http://localhost:5000/api/todos`).then(response => response.json()).then(todos => {
+      localStorage.setItem('@saipos-todos', JSON.stringify(todos))
+      setTodos(todos)
+    })
+  }, [])
+
   const createTodo = useCallback(async (data: CreateTodoData) => {
     try {
       const response = await fetch('http://localhost:5000/api/todos', {
@@ -43,8 +67,7 @@ export const TodoProvider = ({ children }) => {
         body: JSON.stringify(data)
       }).then(response => response.json())
 
-      setPendingTodos(state => [...state, response])
-      // setPendingTodos([...pendingTodos, response])
+      setTodos(state => [...state, response])
       
       toast.success('Nova tarefa cadastrada com sucesso', {
         position: "top-right",
@@ -70,8 +93,15 @@ export const TodoProvider = ({ children }) => {
     }
   }, [])
 
+  const toogleTodoStatus = useCallback(async ({ id, type }: ToogleTodoData) => {
+    setTodos(todos.map(item => item.id === id ? {...item, completed: !item.completed} : item))
+  }, [todos])
+
+  const completedTodos = useMemo(() => todos.filter(todo => todo.completed), [todos])
+  const pendingTodos  = useMemo(() => todos.filter(todo => !todo.completed), [todos])
+
   return (
-    <TodoContext.Provider value={{ completedTodos, pendingTodos, createTodo }}>
+    <TodoContext.Provider value={{ todos, completedTodos, pendingTodos, createTodo, toogleTodoStatus }}>
       {children}
     </TodoContext.Provider>
   )
