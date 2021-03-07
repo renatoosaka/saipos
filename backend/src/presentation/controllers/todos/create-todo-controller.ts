@@ -22,7 +22,9 @@ export class CreateTodoController implements Controller {
         return badRequest(todoOrError.value);
       }
 
-      IO.client.emit('todo_created', todoOrError.value);
+      if (IO.client) {
+        IO.client.emit('todo_created', todoOrError.value);
+      }
 
       return created(todoOrError.value);
     } catch (error) {

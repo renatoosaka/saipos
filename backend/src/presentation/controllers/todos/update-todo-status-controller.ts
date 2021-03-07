@@ -32,7 +32,9 @@ export class UpdateTodoStatusController implements Controller {
         return badRequest(todoOrError.value);
       }
 
-      IO.client.emit('todo_updated', todoOrError.value);
+      if (IO.client) {
+        IO.client.emit('todo_updated', todoOrError.value);
+      }
 
       return ok(todoOrError.value);
     } catch (error) {
