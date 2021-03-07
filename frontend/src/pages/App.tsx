@@ -10,13 +10,15 @@ import styles from '../styles/Home.module.css'
 
 function App() {
   const { toggle } = useModal()
-  const { pendingTodos, completedTodos, isUserPasswordAsked } = useTodo()
+  const { pendingTodos, completedTodos, isUserPasswordAsked, randomTodo } = useTodo()
 
   return (
     <div className={styles.container}>
       <h1 className={styles.pageTitle}>Tarefas</h1>
 
       <Form />
+
+      <button onClick={() => randomTodo()} className={styles.noTasks}>Estou sem tarefas</button>
 
       <div className={styles.todoContainer}>
         <TodoList title='Pendentes' acceptDrop='completed' todos={pendingTodos} />

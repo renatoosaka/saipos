@@ -18,3 +18,19 @@
   flex-direction: row;
   width: 100%;
 }
+
+.noTasks {
+  margin: 2rem 0;
+
+  border: none;
+  color: #fff;
+  background-color: #9b3574;
+  padding: 1rem;
+  width: 100%;
+  border-radius: 0.5rem;
+  transition: all .15s ease-in-out;
+}
+
+.noTasks:hover {
+  opacity: .85;
+}

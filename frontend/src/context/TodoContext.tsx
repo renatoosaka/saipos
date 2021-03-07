@@ -31,6 +31,7 @@ interface TodoContextData {
   completedTodos: Todo[]
   pendingTodos: Todo[]
   toggleTodoID: string
+  randomTodo: () => Promise<void>
   createTodo: (data: CreateTodoData) => Promise<void>
   toogleTodoStatus: (data: ToogleTodoData) => Promise<void>
   cancelAskPassword: () => void
@@ -57,7 +58,6 @@ export  function TodoProvider({ children }: TodoProviderProps) {
   })
   
   useEffect(() => {
-    console.log(process.env.REACT_APP_API_URL)
     fetch(`${process.env.REACT_APP_API_URL}/api/todos`).then(response => response.json()).then(todos => {
       localStorage.setItem('@saipos-todos', JSON.stringify(todos))
       setTodos(todos)
@@ -226,6 +226,45 @@ export  function TodoProvider({ children }: TodoProviderProps) {
     }
   }, [])
 
+  const randomTodo = useCallback(async () => {
+    try {
+      const todos = await fetch('https://cat-fact.herokuapp.com/facts/random?&amount=3', {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'          
+        }
+      }).then(response => response.json())
+      
+      await Promise.all(
+        todos.map((todo: any) => fetch(`${process.env.REACT_APP_API_URL}/api/todos`, {
+            method: 'POST',
+            headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json'          
+            },
+            body: JSON.stringify({
+              description: todo.text,
+              name: 'Eu',
+              email: 'eu@me.com'
+            })
+          })
+        )
+      )
+      
+    } catch (error) {
+      toast.error('Ocorreu um erro ao adicionar tarefas aleatórias. Tente novamente', {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
+    }
+  }, []);
+
   const completedTodos = useMemo(() => todos.filter(todo => todo.completed), [todos])
   const pendingTodos  = useMemo(() => todos.filter(todo => !todo.completed), [todos])
 
@@ -236,6 +275,7 @@ export  function TodoProvider({ children }: TodoProviderProps) {
       completedTodos, 
       pendingTodos,
       toggleTodoID: toggleID, 
+      randomTodo,
       createTodo, 
       toogleTodoStatus, 
       cancelAskPassword,
