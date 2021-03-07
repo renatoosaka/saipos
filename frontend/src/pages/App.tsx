@@ -1,12 +1,16 @@
-import React from 'react';
-import { Form } from "../components/Form";
-import { TodoList } from "../components/TodoList";
-import { useTodo } from "../context/TodoContext";
+import React from 'react'
+
+import { Modal, useModal } from "../components/Modal"
+import { Form } from "../components/Form"
+import { Password } from "../components/Password"
+import { TodoList } from "../components/TodoList"
+import { useTodo } from "../context/TodoContext"
 
 import styles from '../styles/Home.module.css'
 
 function App() {
-  const { pendingTodos, completedTodos } = useTodo()
+  const { toggle } = useModal()
+  const { pendingTodos, completedTodos, isUserPasswordAsked } = useTodo()
 
   return (
     <div className={styles.container}>
@@ -18,6 +22,10 @@ function App() {
         <TodoList title='Pendentes' acceptDrop='completed' todos={pendingTodos} />
         <TodoList title='Finalizadas' acceptDrop='pending' todos={completedTodos} />
       </div>
+
+      <Modal isShowing={isUserPasswordAsked} toggle={toggle}>
+        <Password />
+      </Modal>
     </div>
   );
 }

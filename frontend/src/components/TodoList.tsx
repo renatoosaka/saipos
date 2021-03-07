@@ -2,7 +2,6 @@ import { useDrop } from 'react-dnd'
 import { TodoContainer } from './Todo'
 
 import styles from '../styles/components/TodoList.module.css'
-
 interface User {
   id: string;
   name: string;
