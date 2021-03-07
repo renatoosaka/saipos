@@ -1,7 +1,7 @@
 import { left, right } from '../../shared';
-import { TodoNotFoundError } from '../errors';
+import { TodoLimitReopenError, TodoNotFoundError } from '../errors';
 import { TodoRepository } from '../protocols/todo-repository';
-import { AddHistory } from '../protocols/history-repository';
+import { HistoryRepository } from '../protocols/history-repository';
 import {
   UpdateTodoStatus,
   UpdateTodoStatusDTO,
@@ -11,7 +11,7 @@ import {
 export class UpdateTodoStatusUseCase implements UpdateTodoStatus {
   constructor(
     private readonly todoRepository: TodoRepository,
-    private readonly addHistory: AddHistory,
+    private readonly historyRepository: HistoryRepository,
   ) {}
 
   async update(data: UpdateTodoStatusDTO): Promise<UpdateTodoStatusResponse> {
@@ -23,12 +23,21 @@ export class UpdateTodoStatusUseCase implements UpdateTodoStatus {
       return left(new TodoNotFoundError(id));
     }
 
+    const reopen_count = await this.historyRepository.count({
+      todo_id: id,
+      type: 'reopened',
+    });
+
+    if (reopen_count >= 2) {
+      return left(new TodoLimitReopenError(id));
+    }
+
     const todo = await this.todoRepository.update({
       id,
       completed,
     });
 
-    await this.addHistory.add({
+    await this.historyRepository.add({
       todo_id: id,
       type: completed ? 'completed' : 'reopened',
     });

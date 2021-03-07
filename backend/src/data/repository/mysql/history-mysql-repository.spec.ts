@@ -52,7 +52,7 @@ describe('#HistoryMySQLRepository', () => {
     await MySQLDB.disconnect();
   });
 
-  it('should return a USER on success', async () => {
+  it('should return a history on success', async () => {
     const sut = makeSut();
 
     await sut.add({
@@ -70,5 +70,17 @@ describe('#HistoryMySQLRepository', () => {
     expect(history.id).toBeTruthy();
     expect(history.todo_id).toEqual(validTodo.id);
     expect(history.type).toEqual('created');
+  });
+
+  it('should return 1 history count', async () => {
+    const sut = makeSut();
+
+    const count = await sut.count({
+      todo_id: validTodo.id as string,
+      type: 'created',
+    });
+
+    expect(count).toBeTruthy();
+    expect(count).toEqual(1);
   });
 });
