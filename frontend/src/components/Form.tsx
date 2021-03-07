@@ -33,7 +33,7 @@ export function Form() {
       {errors.email && (<span>E-mail não foi informado</span>)}
 
       <footer>
-        <button type="button">Cancelar</button>
+        <button type="button" onClick={() => reset()}>Cancelar</button>
         <button type="submit">Salvar</button>
       </footer>
     </form>

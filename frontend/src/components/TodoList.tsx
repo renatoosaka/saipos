@@ -32,7 +32,7 @@ export function TodoList({ title, todos, acceptDrop }: TodoListProps) {
   return (
     <div className={`${styles.container} ${isOver && styles.dropOver}`} ref={drop}>
       <p className={styles.title}>{title}</p>
-      <div className={styles.listContainer}>
+      <div className={`${styles.listContainer} ${styles[acceptDrop]}`}>
         {todos.map(todo => <TodoContainer key={todo.id} todo={todo}/>)}      
       </div>
     </div>

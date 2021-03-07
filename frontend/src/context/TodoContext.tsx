@@ -67,7 +67,7 @@ export  function TodoProvider({ children }: TodoProviderProps) {
         body: JSON.stringify(data)
       }).then(response => response.json())
 
-      setTodos(state => [...state, response])
+      setTodos(state => [response, ...state])
       
       toast.success('Nova tarefa cadastrada com sucesso', {
         position: "top-right",

@@ -13,6 +13,15 @@
   margin-left: 1rem;
 }
 
-.dropOver .listContainer{
-  border: 1px dashed red;
+.listContainer {
+  border-radius: 0.5rem;
+  padding: 0.5rem;
+}
+
+.dropOver .listContainer.completed {
+  border: 2px dashed #dec61a;
+}
+
+.dropOver .listContainer.pending { 
+  border: 2px dashed #1dab3c;
 }
