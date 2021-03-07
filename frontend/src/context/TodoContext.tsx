@@ -57,12 +57,13 @@ export  function TodoProvider({ children }: TodoProviderProps) {
   })
   
   useEffect(() => {
-    fetch(`http://localhost:5000/api/todos`).then(response => response.json()).then(todos => {
+    console.log(process.env.REACT_APP_API_URL)
+    fetch(`${process.env.REACT_APP_API_URL}/api/todos`).then(response => response.json()).then(todos => {
       localStorage.setItem('@saipos-todos', JSON.stringify(todos))
       setTodos(todos)
     })
 
-    const socket = io('http://localhost:5000')
+    const socket = io(`${process.env.REACT_APP_API_URL}`)
 
     socket.on("todo_created", (todo_created: Todo) => {
       setTodos(state => [todo_created, ...state])
@@ -75,7 +76,7 @@ export  function TodoProvider({ children }: TodoProviderProps) {
 
   const createTodo = useCallback(async (data: CreateTodoData) => {
     try {
-      await fetch('http://localhost:5000/api/todos', {
+      await fetch(`${process.env.REACT_APP_API_URL}/api/todos`, {
         method: 'POST',
         headers: {
           'Accept': 'application/json',
@@ -126,7 +127,7 @@ export  function TodoProvider({ children }: TodoProviderProps) {
 
   const validateUserPassword = useCallback(async (password: string, todo_id: string) => {
     try {
-      const response = await fetch('http://localhost:5000/api/users/validate', {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/users/validate`, {
         method: 'POST',
         headers: {
           'Accept': 'application/json',
@@ -179,7 +180,7 @@ export  function TodoProvider({ children }: TodoProviderProps) {
 
   const updateTodoStatus = useCallback(async (id: string, completed: boolean) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/todos/${id}`, {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/todos/${id}`, {
         method: 'PATCH',
         headers: {
           'Accept': 'application/json',
