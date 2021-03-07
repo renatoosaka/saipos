@@ -9,6 +9,7 @@ import {
 import { HTTPRequest, HTTPResponse } from '../../protocols/http-protocol';
 import { UpdateTodoStatus } from '../../../usecases/protocols/update-todo-status-protocols';
 import { TodoNotFoundError } from '../../../usecases/errors';
+import { IO } from '../../../infra/socket';
 
 export class UpdateTodoStatusController implements Controller {
   constructor(private readonly updaTodoStatus: UpdateTodoStatus) {}
@@ -30,6 +31,8 @@ export class UpdateTodoStatusController implements Controller {
 
         return badRequest(todoOrError.value);
       }
+
+      IO.client.emit('todo_updated', todoOrError.value);
 
       return ok(todoOrError.value);
     } catch (error) {

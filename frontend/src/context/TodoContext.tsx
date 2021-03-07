@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { toast } from 'react-toastify'
+import io from "socket.io-client";
 
 interface User {
   id: string;
@@ -45,6 +46,7 @@ export  function TodoProvider({ children }: TodoProviderProps) {
   const [toggleID, setToggleID] = useState<string | null>(() => {
     return localStorage.getItem('@saipos-toogle-id')
   })
+
   const [askUserPassword, setAskUserPassword] = useState(false)
   const [todos, setTodos] = useState<Todo[]>(() => {
     const todos = localStorage.getItem('@saipos-todos')
@@ -61,11 +63,21 @@ export  function TodoProvider({ children }: TodoProviderProps) {
       localStorage.setItem('@saipos-todos', JSON.stringify(todos))
       setTodos(todos)
     })
+
+    const socket = io('http://localhost:5000')
+
+    socket.on("todo_created", (todo_created: Todo) => {
+      setTodos(state => [todo_created, ...state])
+    });
+
+    socket.on("todo_updated", (todo_updated: Todo) => {
+      setTodos(state => state.map(item => item.id === todo_updated.id ? todo_updated : item))
+    });    
   }, [])
 
   const createTodo = useCallback(async (data: CreateTodoData) => {
     try {
-      const response = await fetch('http://localhost:5000/api/todos', {
+      await fetch('http://localhost:5000/api/todos', {
         method: 'POST',
         headers: {
           'Accept': 'application/json',
@@ -73,8 +85,6 @@ export  function TodoProvider({ children }: TodoProviderProps) {
         },
         body: JSON.stringify(data)
       }).then(response => response.json())
-
-      setTodos(state => [response, ...state])
       
       toast.success('Nova tarefa cadastrada com sucesso', {
         position: "top-right",
@@ -194,7 +204,7 @@ export  function TodoProvider({ children }: TodoProviderProps) {
         return;
       }
 
-      setTodos(todos.map(item => item.id === toggleID ? {...item, completed } : item))
+      // setTodos(todos.map(item => item.id === toggleID ? {...item, completed } : item))
       
       toast.success('Tarefa atualizada com sucesso', {
         position: "top-right",
