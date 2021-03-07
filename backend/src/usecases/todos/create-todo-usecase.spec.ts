@@ -179,7 +179,7 @@ describe('#CreateTodoUseCase', () => {
     const todo = response.value as TodoData;
 
     expect(addSpy).toHaveBeenCalledWith({
-      type: 'completed',
+      type: 'created',
       todo_id: todo.id as string,
     });
   });
