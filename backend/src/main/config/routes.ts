@@ -1,5 +1,9 @@
 import { Express, Router } from 'express';
-import { showAllTodosRoute, createTodoRoute } from '../routes/todos';
+import {
+  showAllTodosRoute,
+  createTodoRoute,
+  updateTodoStatusRoute,
+} from '../routes/todos';
 import { validateUserPasswordRoute } from '../routes/users';
 
 export default (app: Express): void => {
@@ -14,6 +18,8 @@ export default (app: Express): void => {
   });
 
   createTodoRoute(router);
+  updateTodoStatusRoute(router);
   showAllTodosRoute(router);
+
   validateUserPasswordRoute(router);
 };

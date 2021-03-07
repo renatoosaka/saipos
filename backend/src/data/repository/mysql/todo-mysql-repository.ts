@@ -6,9 +6,72 @@ import {
   AddTodo,
   AddTodoDTO,
   AllTodos,
+  FindTodoByID,
+  UpdateTodo,
+  UpdateTodoDTO,
 } from '../../../usecases/protocols/todo-repository';
 
-export class TodoMySQLRepository implements AddTodo, AllTodos {
+export class TodoMySQLRepository
+  implements AddTodo, AllTodos, UpdateTodo, FindTodoByID {
+  async find(id: string): Promise<TodoData | undefined> {
+    const [rows, _] = await MySQLDB.client.execute<RowDataPacket[]>(
+      `SELECT todos.*, users.name, users.email
+         FROM todos
+        INNER JOIN users ON (users.id = todos.user_id)
+        WHERE todos.id = ?`,
+      [id],
+    );
+
+    if (!rows || !rows[0]) {
+      return undefined;
+    }
+
+    const todo = rows[0];
+
+    return {
+      id: todo.id,
+      description: todo.description,
+      completed: todo.completed,
+      user: {
+        id: todo.user_id,
+        name: todo.name,
+        email: todo.email,
+      },
+    };
+  }
+
+  async update(data: UpdateTodoDTO): Promise<TodoData> {
+    await MySQLDB.client.execute(
+      `
+      UPDATE todos
+         SET completed = ?
+       WHERE id = ?
+    `,
+      [data.completed, data.id],
+    );
+
+    const [rows, _] = await MySQLDB.client.execute<RowDataPacket[]>(
+      `SELECT todos.*, users.name, users.email
+         FROM todos
+        INNER JOIN users ON (users.id = todos.user_id)
+        WHERE todos.id = ?`,
+      [data.id],
+    );
+
+    const todo = rows[0];
+
+    return {
+      id: todo.id,
+      description: todo.description,
+      completed: todo.completed,
+      user: {
+        id: todo.user_id,
+        name: todo.name,
+        email: todo.email,
+      },
+    };
+  }
+
   async all(): Promise<TodoData[]> {
     const todos: TodoData[] = [];
     const [rows, _] = await MySQLDB.client.execute<RowDataPacket[]>(

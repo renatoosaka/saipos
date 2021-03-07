@@ -71,4 +71,30 @@ describe('#TodoMySQLRepository', () => {
     expect(todos).toBeTruthy();
     expect(todos.length).toBeGreaterThanOrEqual(1);
   });
+
+  it('should return a todo by id', async () => {
+    const sut = makeSut();
+
+    const todo_created = await sut.add(makeValidCreateData());
+
+    const todo = await sut.find(todo_created.id as string);
+
+    expect(todo).toBeTruthy();
+    expect(todo?.id).toEqual(todo_created.id);
+  });
+
+  it('should return update todo to completed', async () => {
+    const sut = makeSut();
+
+    const todo_created = await sut.add(makeValidCreateData());
+
+    const todo = await sut.update({
+      id: todo_created.id as string,
+      completed: true,
+    });
+
+    expect(todo).toBeTruthy();
+    expect(todo.id).toEqual(todo_created.id);
+    expect(todo.completed).toBeTruthy();
+  });
 });
