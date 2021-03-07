@@ -23,13 +23,15 @@ export class UpdateTodoStatusUseCase implements UpdateTodoStatus {
       return left(new TodoNotFoundError(id));
     }
 
-    const reopen_count = await this.historyRepository.count({
-      todo_id: id,
-      type: 'reopened',
-    });
+    if (!completed) {
+      const reopen_count = await this.historyRepository.count({
+        todo_id: id,
+        type: 'reopened',
+      });
 
-    if (reopen_count >= 2) {
-      return left(new TodoLimitReopenError(id));
+      if (reopen_count >= 2) {
+        return left(new TodoLimitReopenError(id));
+      }
     }
 
     const todo = await this.todoRepository.update({

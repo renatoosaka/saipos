@@ -30,10 +30,11 @@ interface TodoContextData {
   todos: Todo[]
   completedTodos: Todo[]
   pendingTodos: Todo[]
+  toggleTodoID: string
   createTodo: (data: CreateTodoData) => Promise<void>
   toogleTodoStatus: (data: ToogleTodoData) => Promise<void>
   cancelAskPassword: () => void
-  validateUserPassword: (password: string) => Promise<void>
+  validateUserPassword: (password: string, todo_id: string) => Promise<void>
 }
 
 const TodoContext = createContext({} as TodoContextData)
@@ -43,10 +44,7 @@ interface TodoProviderProps {
 }
 
 export  function TodoProvider({ children }: TodoProviderProps) {
-  const [toggleID, setToggleID] = useState<string | null>(() => {
-    return localStorage.getItem('@saipos-toogle-id')
-  })
-
+  const [toggleID, setToggleID] = useState<string>('')
   const [askUserPassword, setAskUserPassword] = useState(false)
   const [todos, setTodos] = useState<Todo[]>(() => {
     const todos = localStorage.getItem('@saipos-todos')
@@ -118,7 +116,7 @@ export  function TodoProvider({ children }: TodoProviderProps) {
     }
 
     if (todos[todoIndex].completed) {
-      localStorage.setItem('@saipos-toogle-id', id)
+      setToggleID(id)
       setAskUserPassword(true)
     } else {
       await updateTodoStatus(id, !todos[todoIndex].completed )
@@ -126,7 +124,7 @@ export  function TodoProvider({ children }: TodoProviderProps) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [todos])
 
-  const validateUserPassword = useCallback(async (password: string) => {
+  const validateUserPassword = useCallback(async (password: string, todo_id: string) => {
     try {
       const response = await fetch('http://localhost:5000/api/users/validate', {
         method: 'POST',
@@ -134,7 +132,7 @@ export  function TodoProvider({ children }: TodoProviderProps) {
           'Accept': 'application/json',
           'Content-Type': 'application/json'          
         },
-        body: JSON.stringify({ password })
+        body: JSON.stringify({ password, todo_id })
       }).then(response => response.json())
       
       if (response.error) {
@@ -150,16 +148,15 @@ export  function TodoProvider({ children }: TodoProviderProps) {
       }
 
       if (response.ok) {
-        const todoIndex = todos.findIndex(t => t.id === toggleID)
+        const todoIndex = todos.findIndex(t => t.id === response.todo_id)
 
-        console.log(toggleID, todoIndex)
         if (todoIndex < 0) {
           return;
         }        
 
         setAskUserPassword(false)
         await updateTodoStatus(todos[todoIndex].id, !todos[todoIndex].completed )
-        localStorage.removeItem('@saipos-toogle-id')
+        setToggleID('')
       }
 
     } catch (error) {
@@ -176,7 +173,7 @@ export  function TodoProvider({ children }: TodoProviderProps) {
       });    
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [todos, toggleID])
+  }, [todos])
 
   const cancelAskPassword = useCallback(() => setAskUserPassword(false), [])
 
@@ -203,8 +200,6 @@ export  function TodoProvider({ children }: TodoProviderProps) {
         });        
         return;
       }
-
-      // setTodos(todos.map(item => item.id === toggleID ? {...item, completed } : item))
       
       toast.success('Tarefa atualizada com sucesso', {
         position: "top-right",
@@ -228,7 +223,7 @@ export  function TodoProvider({ children }: TodoProviderProps) {
         progress: undefined,
       });      
     }
-  }, [todos, toggleID])
+  }, [])
 
   const completedTodos = useMemo(() => todos.filter(todo => todo.completed), [todos])
   const pendingTodos  = useMemo(() => todos.filter(todo => !todo.completed), [todos])
@@ -238,7 +233,8 @@ export  function TodoProvider({ children }: TodoProviderProps) {
       isUserPasswordAsked: askUserPassword,
       todos, 
       completedTodos, 
-      pendingTodos, 
+      pendingTodos,
+      toggleTodoID: toggleID, 
       createTodo, 
       toogleTodoStatus, 
       cancelAskPassword,

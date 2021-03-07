@@ -9,13 +9,13 @@ interface FormData {
 }
 
 export function Password() {
-  const { cancelAskPassword, validateUserPassword } = useTodo()
+  const { toggleTodoID, cancelAskPassword, validateUserPassword } = useTodo()
   const { register, errors, handleSubmit, reset } = useForm<FormData>();
 
   const onSubmit = useCallback(async (data: FormData) => {
-    await validateUserPassword(data.password)
+    await validateUserPassword(data.password, toggleTodoID)
     reset()
-  }, [validateUserPassword, reset]);
+  }, [validateUserPassword, toggleTodoID, reset]);
 
   return (
     <>

@@ -18,7 +18,10 @@ describe('#ValidateUserPassword Controller', () => {
     const { sut } = makeSut();
 
     const response = await sut.handle({
-      body: { password: faker.random.alpha({ count: 10 }) },
+      body: {
+        password: faker.random.alpha({ count: 10 }),
+        todo_id: faker.random.uuid(),
+      },
     });
 
     expect(response).toEqual(unauthorized());
@@ -27,10 +30,11 @@ describe('#ValidateUserPassword Controller', () => {
   it('should return 200 if correct password is provided', async () => {
     const { sut } = makeSut();
 
+    const todo_id = faker.random.uuid();
     const response = await sut.handle({
-      body: { password: 'TrabalheNaSaipos' },
+      body: { password: 'TrabalheNaSaipos', todo_id },
     });
 
-    expect(response).toEqual(ok({ ok: 'OK' }));
+    expect(response).toEqual(ok({ ok: 'OK', todo_id }));
   });
 });
