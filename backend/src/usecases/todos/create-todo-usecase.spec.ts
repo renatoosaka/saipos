@@ -6,10 +6,12 @@ import { AddTodo, AddTodoDTO } from '../protocols/todo-repository';
 import { AddUserDTO, UserRepository } from '../protocols/user-repository';
 import { InvalidEmailError, RequiredValueError } from '../../domain/errors';
 import { CreateTodo, CreateTodoDTO } from '../protocols/create-todo-protocols';
+import { AddHistory, AddHistoryDTO } from '../protocols/history-repository';
 
 interface SutTypes {
   sut: CreateTodo;
   addTodoStub: AddTodo;
+  addHistoryStub: AddHistory;
   userRepositoryStub: UserRepository;
 }
 
@@ -41,6 +43,16 @@ const makeUserRepositoryStub = (): UserRepository => {
   return new UserRepositoryStub();
 };
 
+const makeAddHistoryStub = (): AddHistory => {
+  class AddHistoryStub implements AddHistory {
+    async add(data: AddHistoryDTO): Promise<void> {
+      console.log(data);
+    }
+  }
+
+  return new AddHistoryStub();
+};
+
 const makeAddTodoStub = (): AddTodo => {
   class AddTodoStub implements AddTodo {
     add(data: AddTodoDTO): Promise<TodoData> {
@@ -64,10 +76,15 @@ const makeAddTodoStub = (): AddTodo => {
 
 const makeSut = (): SutTypes => {
   const addTodoStub = makeAddTodoStub();
+  const addHistoryStub = makeAddHistoryStub();
   const userRepositoryStub = makeUserRepositoryStub();
-  const sut = new CreateTodoUseCase(addTodoStub, userRepositoryStub);
+  const sut = new CreateTodoUseCase(
+    addTodoStub,
+    addHistoryStub,
+    userRepositoryStub,
+  );
 
-  return { sut, addTodoStub, userRepositoryStub };
+  return { sut, addTodoStub, addHistoryStub, userRepositoryStub };
 };
 
 const makeValidRequest = (): CreateTodoDTO => ({
@@ -152,7 +169,22 @@ describe('#CreateTodoUseCase', () => {
     });
   });
 
-  it('should call AddTodo.find with correct value', async () => {
+  it('should call AddHistory.add with correct value', async () => {
+    const { sut, addHistoryStub } = makeSut();
+
+    const addSpy = jest.spyOn(addHistoryStub, 'add');
+
+    const response = await sut.create(makeValidRequest());
+
+    const todo = response.value as TodoData;
+
+    expect(addSpy).toHaveBeenCalledWith({
+      type: 'completed',
+      todo_id: todo.id as string,
+    });
+  });
+
+  it('should call AddTodo.add with correct value', async () => {
     const { sut, addTodoStub } = makeSut();
 
     const addSpy = jest.spyOn(addTodoStub, 'add');
@@ -167,7 +199,7 @@ describe('#CreateTodoUseCase', () => {
   });
 
   it('should throws an error if any dependency throw', async () => {
-    const { sut, addTodoStub, userRepositoryStub } = makeSut();
+    const { sut, addTodoStub, userRepositoryStub, addHistoryStub } = makeSut();
 
     jest.spyOn(addTodoStub, 'add').mockRejectedValueOnce(new Error());
 
@@ -179,6 +211,10 @@ describe('#CreateTodoUseCase', () => {
 
     jest.spyOn(userRepositoryStub, 'find').mockResolvedValueOnce(undefined);
     jest.spyOn(userRepositoryStub, 'add').mockRejectedValueOnce(new Error());
+
+    await expect(sut.create(makeValidRequest())).rejects.toThrow();
+
+    jest.spyOn(addHistoryStub, 'add').mockRejectedValueOnce(new Error());
 
     await expect(sut.create(makeValidRequest())).rejects.toThrow();
   });

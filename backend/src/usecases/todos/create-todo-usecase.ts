@@ -8,10 +8,12 @@ import {
   CreateTodoDTO,
   CreateTodoResponse,
 } from '../protocols/create-todo-protocols';
+import { AddHistory } from '../protocols/history-repository';
 
 export class CreateTodoUseCase implements CreateTodo {
   constructor(
     private readonly addTodo: AddTodo,
+    private readonly addHistory: AddHistory,
     private readonly userRepository: UserRepository,
   ) {}
 
@@ -50,6 +52,11 @@ export class CreateTodoUseCase implements CreateTodo {
     const todo_created = await this.addTodo.add({
       description,
       user_id: user.id as string,
+    });
+
+    await this.addHistory.add({
+      todo_id: todo_created.id as string,
+      type: 'created',
     });
 
     return right(todo_created);
